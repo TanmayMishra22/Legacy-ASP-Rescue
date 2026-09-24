@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Legacy Web Rescue — Tanmay Mishra</title>
+  <meta name="description" content="Troubleshooting difficult Classic ASP, IIS, SQL Server and legacy web application problems.">
+  <style>
+    :root { --bg:#f7f7f5; --ink:#171717; --muted:#626262; --card:#fff; --line:#deded8; --accent:#111; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); line-height:1.6; }
+    .wrap { max-width:980px; margin:auto; padding:0 24px; }
+    header { padding:72px 0 56px; border-bottom:1px solid var(--line); }
+    .eyebrow { font-size:13px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+    h1 { font-size:clamp(42px,7vw,72px); line-height:1.02; letter-spacing:-.045em; margin:18px 0 22px; max-width:820px; }
+    .lead { font-size:22px; max-width:720px; color:#353535; }
+    .cta { display:inline-block; margin-top:24px; padding:13px 18px; background:var(--accent); color:white; text-decoration:none; border-radius:7px; font-weight:700; }
+    section { padding:58px 0; border-bottom:1px solid var(--line); }
+    h2 { font-size:30px; letter-spacing:-.025em; margin:0 0 24px; }
+    h3 { margin:0 0 10px; font-size:21px; }
+    .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:24px; }
+    .card p { margin:8px 0 0; color:#4b4b4b; }
+    ul { padding-left:20px; }
+    .tags { display:flex; flex-wrap:wrap; gap:8px; }
+    .tag { border:1px solid #cfcfc9; background:#fff; border-radius:999px; padding:7px 11px; font-size:14px; }
+    .steps { counter-reset:step; }
+    .step { display:grid; grid-template-columns:42px 1fr; gap:16px; margin:18px 0; }
+    .num { width:34px; height:34px; border:1px solid #bbb; border-radius:50%; display:grid; place-items:center; font-weight:700; }
+    footer { padding:38px 0 60px; color:var(--muted); font-size:14px; }
+    a { color:inherit; }
+    @media(max-width:700px){ .grid{grid-template-columns:1fr;} header{padding-top:48px;} .lead{font-size:19px;} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Legacy Web Rescue · Tanmay Mishra</div>
+    <h1>I troubleshoot legacy web applications that nobody wants to rewrite.</h1>
+    <p class="lead">Classic ASP, IIS, SQL Server, APIs and old integrations. If something broke in an existing application, I investigate the specific problem and identify a practical path to a fix.</p>
+    <a class="cta" href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Send me a problem →</a>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>What I work with</h2>
+    <div class="tags">
+      <span class="tag">Classic ASP / VBScript</span><span class="tag">IIS</span>
+      <span class="tag">SQL Server / ADO</span><span class="tag">JavaScript / jQuery / AJAX</span>
+      <span class="tag">REST APIs</span><span class="tag">Webhooks</span>
+      <span class="tag">JSON / XML</span><span class="tag">PDF generation</span>
+      <span class="tag">QR generation</span><span class="tag">Legacy integrations</span>
+      <span class="tag">Debugging & troubleshooting</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Technical experience</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>Legacy API & webhook integration</h3>
+        <p>Working with authentication, HTTP requests, JSON responses, webhooks and the practical constraints of integrating modern services into older server-side applications.</p>
+      </article>
+      <article class="card">
+        <h3>PDF & document generation</h3>
+        <p>Troubleshooting server-side document workflows, including PDF generation and QR-code output, while keeping the surrounding legacy application intact.</p>
+      </article>
+      <article class="card">
+        <h3>Classic ASP + SQL Server</h3>
+        <p>Tracing problems across the full chain: browser → ASP → ADO → SQL Server → application logic, rather than assuming the visible error is the root cause.</p>
+      </article>
+      <article class="card">
+        <h3>Large existing applications</h3>
+        <p>Experience working on a SaaS platform with approximately 10,000 code files and 200 SQL tables across backend code, JavaScript, databases, APIs and integrations.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Problems I want to investigate</h2>
+    <ul>
+      <li>An old ASP page suddenly returns an error.</li>
+      <li>A database connection or SQL operation stopped working.</li>
+      <li>An API or webhook integration broke.</li>
+      <li>A PDF or document component stopped generating correct output.</li>
+      <li>A small change is needed in an application nobody wants to rewrite.</li>
+      <li>The original developer is unavailable and the application is poorly documented.</li>
+      <li>An existing IIS / ASP application behaves differently after a server or configuration change.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div><strong>Send the problem.</strong><br>Share the error, relevant code, screenshot or symptoms.</div></div>
+      <div class="step"><div class="num">2</div><div><strong>I investigate.</strong><br>I trace the relevant application, database, server or integration path.</div></div>
+      <div class="step"><div class="num">3</div><div><strong>You get a diagnosis.</strong><br>I'll explain what appears to be wrong, what needs to change and how to verify it.</div></div>
+      <div class="step"><div class="num">4</div><div><strong>Need implementation?</strong><br>If the repair is contained, we can quote the implementation separately.</div></div>
+    </div>
+    <a class="cta" href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Send a problem →</a>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>About</h2>
+    <p>I’m Tanmay Mishra, a web/backend developer working across legacy and modern web technologies. My focus here is deliberately narrow: investigate difficult problems in existing applications and make the smallest practical change needed to move them forward.</p>
+    <p><a href="https://github.com/TanmayMishra22" target="_blank" rel="noopener">GitHub →</a></p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <strong>Legacy Web Rescue</strong><br>
+    Tanmay Mishra · <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a><br><br>
+    This page describes technical experience and areas of work. It does not claim specific client results or testimonials.
+  </div>
+</footer>
+</body>
+</html>
