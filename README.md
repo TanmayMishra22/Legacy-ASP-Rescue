@@ -1,17 +1,23 @@
-# Legacy Web Rescue
+# Legacy-ASP-Rescue
 
-One-page proof-of-work portfolio for Tanmay Mishra.
+Troubleshooting notes and proof-of-work for Classic ASP, IIS, SQL Server, APIs, and legacy web integrations.
 
-## Publish with GitHub Pages
+**Portfolio page:** open [`index.html`](./index.html) (or enable GitHub Pages on this repo).
 
-1. Create a public GitHub repository named `legacy-web-rescue`.
-2. Upload `index.html`.
-3. Open the repository's **Settings → Pages**.
-4. Select **Deploy from a branch**, choose `main` and `/root`, then save.
-5. GitHub will provide the published Pages URL.
+**Live local (IIS):** `http://localhost/Legacy-ASP-Rescue/`
 
-GitHub profile:
-https://github.com/TanmayMishra22
+## What's inside
 
-Contact:
-devmishratanmaydev@gmail.com
+| Path | What it is |
+|------|------------|
+| `index.html` | One-page portfolio: what Tanmay investigates and how he works |
+| `examples/classic-asp-api-diagnostics/` | Classic ASP sample that calls an HTTP API, captures status/body, and prints a diagnosis |
+
+## Example: Classic ASP API diagnostics
+
+See [`examples/classic-asp-api-diagnostics/`](./examples/classic-asp-api-diagnostics/). Run the `.asp` under IIS (Classic ASP enabled). Uses `MSXML2.ServerXMLHTTP.6.0`. No real credentials are included.
+
+## Contact
+
+- GitHub: https://github.com/TanmayMishra22
+- Email: devmishratanmaydev@gmail.com
