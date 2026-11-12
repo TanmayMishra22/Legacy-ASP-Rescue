@@ -5,27 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Classic ASP fix 09: Date bugs: 03/04 read as 4 March, and &quot;out-of-range&quot; datetime errors | Legacy Web Rescue</title>
 <meta name="description" content="Dates change meaning with server locale and break SQL. Fix: yyyy-mm-dd input, DateSerial parsing, typed date parameters.">
+<meta name="theme-color" content="#0b1730">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-<div class="topbar"><div class="wrap"><a href="../../">&larr; Back to Legacy Web Rescue (home)</a> &nbsp;|&nbsp; <a href="../">All 10 Classic ASP fixes</a></div></div>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="nav" aria-label="Main"><div class="wrap">
+  <a class="brand" href="../../"><span class="logo" aria-hidden="true">LR</span>Legacy Web Rescue</a>
+  <ul>
+    <li><a href="../../#fixes">Classic ASP fixes</a></li>
+    <li><a href="../../#how">How it works</a></li>
+    <li><a href="../../#about">About</a></li>
+    <li><a class="btn-nav" href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Send a problem</a></li>
+  </ul>
+</div></nav>
 
-<header class="page"><div class="wrap">
-  <div class="eyebrow">Classic ASP fix 09 of 10 &middot; Broken vs fixed</div>
+<header class="hero small"><div class="wrap">
+  <p class="crumbs"><a href="../../">Home</a> &rsaquo; <a href="../">Classic ASP fixes</a> &rsaquo; Fix 09</p>
   <h1>Date bugs: 03/04 read as 4 March, and "out-of-range" datetime errors</h1>
   <p class="lead">Dates change meaning with server locale and break SQL. Fix: yyyy-mm-dd input, DateSerial parsing, typed date parameters.</p>
+  <div class="actions"><span class="eyebrow">Fix 09 of 10 &middot; Broken vs fixed</span></div>
 </div></header>
 
+<main id="main">
 <section><div class="wrap">
-  <h2>At a glance: what the user sees</h2>
+  <div class="section-head"><h2>At a glance: what the user sees</h2></div>
   <div class="vs">
-    <div class="panel bad"><div class="label">&#10008; BROKEN</div>
-      <div class="screen"><div class="browser"><div class="addr">/orders.asp?from=13/04/2026</div><div class="view"><div class="errbox"><p class="t">Microsoft OLE DB Driver for SQL Server error '80040e07'</p><p>The conversion of a varchar data type to a datetime data type resulted in an out-of-range value.</p></div>
+    <div class="panel bad"><div class="label"><span class="badge" aria-hidden="true">&#10008;</span>BROKEN</div>
+      <div class="screen"><div class="browser"><div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="addr">/orders.asp?from=13/04/2026</span></div><div class="view"><div class="errbox"><p class="t">Microsoft OLE DB Driver for SQL Server error '80040e07'</p><p>The conversion of a varchar data type to a datetime data type resulted in an out-of-range value.</p></div>
 <hr><p>And with <code>from=03/04/2026</code> (meant 3 April):<br><strong style="color:#b00020">Showing orders since 3/4/2026</strong> - March orders appear.</p></div></div>
       <p class="caption">Illustration of the typical symptom (mock-up, not a screenshot of a real client system).</p></div>
     </div>
-    <div class="panel good"><div class="label">&#10004; FIXED</div>
-      <div class="screen"><div class="browser"><div class="addr">/orders.asp?from=2026-04-03</div><div class="view"><p>From: <span style="border:1px solid #888;padding:2px 8px;border-radius:4px">03-04-2026 &#128197;</span></p>
+    <div class="panel good"><div class="label"><span class="badge" aria-hidden="true">&#10004;</span>FIXED</div>
+      <div class="screen"><div class="browser"><div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="addr">/orders.asp?from=2026-04-03</span></div><div class="view"><p>From: <span style="border:1px solid #888;padding:2px 8px;border-radius:4px">03-04-2026 &#128197;</span></p>
 <p><strong>Showing orders since 3 Apr 2026 (2026-04-03)</strong></p>
 <ul><li>#2 on 3 Apr 2026 - 850.50</li><li>#5 on 10 Apr 2026 - 720.25</li><li>#6 on 12 Apr 2026 - 15.75</li></ul></div></div>
       <p class="caption">Illustration of the result after the fix (mock-up).</p></div>
@@ -33,17 +48,17 @@
   </div>
 </div></section>
 
-<section><div class="wrap">
-  <h2>At a glance: the code</h2>
+<section class="alt"><div class="wrap">
+  <div class="section-head"><h2>At a glance: the code</h2></div>
   <div class="vs">
-    <div class="panel bad"><div class="label">&#10008; BROKEN code</div><pre><code>fromText = Request.QueryString(&quot;from&quot;)  &#x27; &quot;03/04/2026&quot;
+    <div class="panel bad"><div class="label"><span class="badge" aria-hidden="true">&#10008;</span>BROKEN code</div><pre tabindex="0" aria-label="Broken code"><code>fromText = Request.QueryString(&quot;from&quot;)  &#x27; &quot;03/04/2026&quot;
 d = CDate(fromText)        &#x27; 4 March or 3 April? Depends on LCID
 
 Set rs = conn.Execute(&quot;SELECT OrderID, OrderDate, Total &quot; &amp; _
     &quot;FROM Orders WHERE OrderDate &gt;= &#x27;&quot; &amp; fromText &amp; &quot;&#x27;&quot;)
 
 Response.Write &quot;Showing orders since &quot; &amp; d   &#x27; server format</code></pre><div class="note">Same input, different meaning on different servers.</div></div>
-    <div class="panel good"><div class="label">&#10004; FIXED code</div><pre><code>fromText = Trim(Request.QueryString(&quot;from&quot;) &amp; &quot;&quot;)  &#x27; &quot;2026-04-03&quot;
+    <div class="panel good"><div class="label"><span class="badge" aria-hidden="true">&#10004;</span>FIXED code</div><pre tabindex="0" aria-label="Fixed code"><code>fromText = Trim(Request.QueryString(&quot;from&quot;) &amp; &quot;&quot;)  &#x27; &quot;2026-04-03&quot;
 fromDate = ParseIsoDate(fromText)   &#x27; regex + DateSerial + day check
 If IsNull(fromDate) Then errText = &quot;Please pick a valid date.&quot;
 
@@ -55,31 +70,25 @@ cmd.Parameters.Append cmd.CreateParameter( _
 Response.Write &quot;Showing orders since &quot; &amp; NiceDate(fromDate)
 &#x27; -&gt; &quot;3 Apr 2026&quot; on every server</code></pre><div class="note">One format in, typed value to SQL, explicit format out.</div></div>
   </div>
-  <p class="files">Full runnable pages: <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/09-dates-locale/broken.asp">broken.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/09-dates-locale/fixed.asp">fixed.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/09-dates-locale/README.md">README</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/assets/demo-db.sql">demo database script</a></p>
+  <div class="files"><span>Full runnable pages:</span><a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/09-dates-locale/broken.asp">broken.asp</a><a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/09-dates-locale/fixed.asp">fixed.asp</a><a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/09-dates-locale/README.md">README</a><a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/assets/demo-db.sql">Demo database script</a></div>
 </div></section>
 
-<section><div class="wrap">
-  <h2>1. The symptom</h2>
-  <p>Reports show the wrong month, bookings land on the wrong day, or days 13-31 crash with <em>The conversion of a varchar data type to a datetime data type resulted in an out-of-range value.</em> Often appears after moving to a new server or changing Windows regional settings.</p>
-  <h2 style="margin-top:30px">2. Why it happens</h2>
-  <p><code>CDate("03/04/2026")</code> is read using the session/server locale (<code>Session.LCID</code>): US English reads it as 4 March, Indian or UK English as 3 April. When the date is pasted into SQL as text, SQL Server applies its <em>own</em> language/date-format setting, which may differ again. Printing dates with plain <code>Response.Write</code> also uses the server's regional format.</p>
-  <h2 style="margin-top:30px">3. How to spot it</h2>
-  <ul><li><code>CDate(Request(...))</code>, <code>IsDate</code> on free-text input, or <code>"... '" &amp; someDate &amp; "'"</code> in SQL strings.</li><li><code>Session.LCID</code> set in some pages but not others.</li><li>Errors only for days 13 and above, or only after a server move.</li></ul>
-  <h2 style="margin-top:30px">4. The fix</h2>
-  <p>Accept dates in one unambiguous format: <code>&lt;input type="date"&gt;</code> always submits <code>yyyy-mm-dd</code>. Parse it yourself with <code>Split</code> + <code>DateSerial</code> and reject impossible dates (DateSerial turns 31 Feb into 3 March, so compare the day back). Send it to SQL Server as a typed date parameter (<code>adDBTimeStamp</code> 135). For display, format explicitly with fixed month names instead of relying on the locale.</p>
+<section><div class="wrap narrow explain">
+  <div class="card"><h2><span class="n">1</span>The symptom</h2><p>Reports show the wrong month, bookings land on the wrong day, or days 13-31 crash with <em>The conversion of a varchar data type to a datetime data type resulted in an out-of-range value.</em> Often appears after moving to a new server or changing Windows regional settings.</p></div>
+  <div class="card"><h2><span class="n">2</span>Why it happens</h2><p><code>CDate("03/04/2026")</code> is read using the session/server locale (<code>Session.LCID</code>): US English reads it as 4 March, Indian or UK English as 3 April. When the date is pasted into SQL as text, SQL Server applies its <em>own</em> language/date-format setting, which may differ again. Printing dates with plain <code>Response.Write</code> also uses the server's regional format.</p></div>
+  <div class="card"><h2><span class="n">3</span>How to spot it</h2><ul><li><code>CDate(Request(...))</code>, <code>IsDate</code> on free-text input, or <code>"... '" &amp; someDate &amp; "'"</code> in SQL strings.</li><li><code>Session.LCID</code> set in some pages but not others.</li><li>Errors only for days 13 and above, or only after a server move.</li></ul></div>
+  <div class="card"><h2><span class="n">4</span>The fix</h2><p>Accept dates in one unambiguous format: <code>&lt;input type="date"&gt;</code> always submits <code>yyyy-mm-dd</code>. Parse it yourself with <code>Split</code> + <code>DateSerial</code> and reject impossible dates (DateSerial turns 31 Feb into 3 March, so compare the day back). Send it to SQL Server as a typed date parameter (<code>adDBTimeStamp</code> 135). For display, format explicitly with fixed month names instead of relying on the locale.</p></div>
+  <div><h2 style="margin:18px 0 16px">5. Checklist</h2><ul class="check"><li>Date inputs use <code>type="date"</code> or a clearly labelled yyyy-mm-dd format.</li><li>No <code>CDate</code> on user text; parsing uses <code>DateSerial</code> with validation.</li><li>Dates go to SQL as parameters (or, if you must use text, as <code>'yyyymmdd'</code>).</li><li>Date ranges use <code>&gt;= start AND &lt; next day</code> so times are included.</li><li>Display uses an explicit format, not the server's regional settings.</li></ul></div>
+  <div class="callout"><p><strong>Have this problem in a live application?</strong>I investigate the specific issue in your existing code and make the smallest practical change to fix it.</p>
+    <a class="btn btn-primary" href="mailto:devmishratanmaydev@gmail.com?subject=Classic%20ASP%20problem%3A%2009-dates-locale">Send me the problem &rarr;</a></div>
 </div></section>
 
-<section><div class="wrap">
-  <h2>5. Checklist</h2>
-  <ul class="check"><li>Date inputs use <code>type="date"</code> or a clearly labelled yyyy-mm-dd format.</li><li>No <code>CDate</code> on user text; parsing uses <code>DateSerial</code> with validation.</li><li>Dates go to SQL as parameters (or, if you must use text, as <code>'yyyymmdd'</code>).</li><li>Date ranges use <code>&gt;= start AND &lt; next day</code> so times are included.</li><li>Display uses an explicit format, not the server's regional settings.</li></ul>
-  <div class="callout"><strong>Have this problem in a live application?</strong> I investigate the specific issue in your existing code and make the smallest practical change to fix it. <a href="mailto:devmishratanmaydev@gmail.com?subject=Classic%20ASP%20problem%3A%2009-dates-locale">Send me the problem &rarr;</a></div>
-</div></section>
-
-<section><div class="wrap" style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap"><a href="../08-rest-api-tls12/">&larr; Previous: Calling modern REST/JSON APIs: TLS 1.2 errors and fragile parsing</a><a href="../10-file-upload/">Next: File uploads that fail, corrupt files or open a security hole &rarr;</a></div></section>
-
+<section class="alt" style="padding:36px 0"><div class="wrap"><div class="pager"><a class="prev" href="../08-rest-api-tls12/"><small>&larr; Previous</small>Calling modern REST/JSON APIs: TLS 1.2 errors and fragile parsing</a><a class="next" href="../10-file-upload/"><small>Next &rarr;</small>File uploads that fail, corrupt files or open a security hole</a></div></div></section>
+</main>
 <footer><div class="wrap">
-  <strong>Legacy Web Rescue</strong> &middot; Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a> &middot; <a href="https://github.com/TanmayMishra22">GitHub</a><br>
-  Teaching example with made-up demo data. Not taken from any client system.
+  <div><strong>Legacy Web Rescue</strong><br>Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a>
+  <p class="small">Teaching example with made-up demo data. Not taken from any client system.</p></div>
+  <div class="links"><a href="https://github.com/TanmayMishra22" target="_blank" rel="noopener">GitHub &rarr;</a><a href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Email &rarr;</a></div>
 </div></footer>
 </body>
 </html>
