@@ -29,6 +29,14 @@
     .num { width:34px; height:34px; border:1px solid #bbb; border-radius:50%; display:grid; place-items:center; font-weight:700; }
     footer { padding:38px 0 60px; color:var(--muted); font-size:14px; }
     a { color:inherit; }
+    a.card { display:block; text-decoration:none; color:inherit; }
+    a.card:hover { border-color:#111; }
+    a.card h3 { font-size:20px; }
+    a.card p { font-size:17px; }
+    .fixbadge { display:inline-block; font-size:13px; font-weight:800; padding:3px 9px; border-radius:999px; margin-right:6px; }
+    .fixbadge.bad { background:#fdecee; color:#b00020; border:1px solid #b00020; }
+    .fixbadge.good { background:#e8f6ec; color:#0a6b2d; border:1px solid #0a6b2d; }
+    .more { margin-top:22px; font-size:19px; font-weight:700; }
     @media(max-width:700px){ .grid{grid-template-columns:1fr;} header{padding-top:48px;} .lead{font-size:19px;} }
   </style>
 </head>
@@ -39,6 +47,7 @@
     <h1>I troubleshoot legacy web applications that nobody wants to rewrite.</h1>
     <p class="lead">Classic ASP, IIS, SQL Server, APIs and old integrations. If something broke in an existing application, I investigate the specific problem and identify a practical path to a fix.</p>
     <a class="cta" href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Send me a problem →</a>
+    <a class="cta" href="#fixes" style="background:#fff;color:#111;border:2px solid #111;margin-left:8px">See 10 broken-vs-fixed examples ↓</a>
   </div>
 </header>
 
@@ -77,6 +86,70 @@
         <p>Experience working on a SaaS platform with approximately 10,000 code files and 200 SQL tables across backend code, JavaScript, databases, APIs and integrations.</p>
       </article>
     </div>
+  </div>
+</section>
+
+<section id="fixes">
+  <div class="wrap">
+    <h2>Classic ASP fixes: broken vs fixed</h2>
+    <p class="lead" style="font-size:20px;margin-bottom:26px">Ten problems that keep turning up in old Classic ASP applications. Each one has a plain-language explainer, the broken and fixed code side by side, and runnable <code>broken.asp</code> / <code>fixed.asp</code> files.</p>
+    <div class="grid">
+      <a class="card" href="examples/01-sql-injection/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">01. SQL injection in string-built queries</h3>
+        <p>Visitor text glued into SQL lets anyone read or wipe your data. Fix: ADODB.Command parameters.</p>
+      </a>
+      <a class="card" href="examples/02-closed-recordset-leaks/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">02. "Operation is not allowed when the object is closed" and connection leaks</h3>
+        <p>Recordsets used after their connection is closed, and connections never released. Fix: GetRows, then close everything.</p>
+      </a>
+      <a class="card" href="examples/03-unicode-utf8/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">03. Garbled text: JosÃ©, â€™ and ???? instead of real characters</h3>
+        <p>Accents, Hindi and curly quotes break on the way in or out. Fix: UTF-8 end to end, NVARCHAR and N'' strings.</p>
+      </a>
+      <a class="card" href="examples/04-session-loss/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">04. Users logged out and carts emptied at random (Session loss)</h3>
+        <p>Session() data vanishes on app pool recycles, web gardens and load balancers. Fix: keep important state in the database.</p>
+      </a>
+      <a class="card" href="examples/05-hidden-500-errors/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">05. "500 - Internal server error" that hides the real problem</h3>
+        <p>Generic 500 pages and On Error Resume Next hide what actually failed. Fix: see real errors safely, log them with a reference.</p>
+      </a>
+      <a class="card" href="examples/06-xss-output-encoding/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">06. Cross-site scripting (XSS) from unencoded output</h3>
+        <p>Visitor text written straight into HTML can run scripts in other users' browsers. Fix: encode every output with Server.HTMLEncode.</p>
+      </a>
+      <a class="card" href="examples/07-n-plus-1-slow-pages/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">07. Slow pages from N+1 queries and row-by-row loops</h3>
+        <p>One query per row turns a report into thousands of round trips. Fix: one JOIN/GROUP BY query plus GetRows.</p>
+      </a>
+      <a class="card" href="examples/08-rest-api-tls12/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">08. Calling modern REST/JSON APIs: TLS 1.2 errors and fragile parsing</h3>
+        <p>Payment, SMS or shipping API calls fail with secure-channel errors or break on small changes. Fix: ServerXMLHTTP 6.0, TLS 1.2, timeouts, status checks.</p>
+      </a>
+      <a class="card" href="examples/09-dates-locale/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">09. Date bugs: 03/04 read as 4 March, and "out-of-range" datetime errors</h3>
+        <p>Dates change meaning with server locale and break SQL. Fix: yyyy-mm-dd input, DateSerial parsing, typed date parameters.</p>
+      </a>
+      <a class="card" href="examples/10-file-upload/">
+        <div><span class="fixbadge bad">BROKEN</span><span class="fixbadge good">FIXED</span></div>
+        <h3 style="margin-top:10px">10. File uploads that fail, corrupt files or open a security hole</h3>
+        <p>ASP 0104 / ASP 0206 errors, broken files and unsafe saving. Fix: correct limits, one BinaryRead, safe names and folders.</p>
+      </a>
+      <a class="card" href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/tree/main/examples/classic-asp-api-diagnostics" target="_blank" rel="noopener">
+        <h3>Bonus: Classic ASP API diagnostics</h3>
+        <p>A Classic ASP page that calls an HTTP API, captures the status and body, and prints a diagnosis (opens on GitHub).</p>
+      </a>
+    </div>
+    <p class="more"><a href="examples/">See all Classic ASP fixes on one page &rarr;</a></p>
   </div>
 </section>
 
