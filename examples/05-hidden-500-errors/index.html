@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classic ASP fix 05: &quot;500 - Internal server error&quot; that hides the real problem | Legacy Web Rescue</title>
+<meta name="description" content="Generic 500 pages and On Error Resume Next hide what actually failed. Fix: see real errors safely, log them with a reference.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap"><a href="../../">&larr; Back to Legacy Web Rescue (home)</a> &nbsp;|&nbsp; <a href="../">All 10 Classic ASP fixes</a></div></div>
+
+<header class="page"><div class="wrap">
+  <div class="eyebrow">Classic ASP fix 05 of 10 &middot; Broken vs fixed</div>
+  <h1>"500 - Internal server error" that hides the real problem</h1>
+  <p class="lead">Generic 500 pages and On Error Resume Next hide what actually failed. Fix: see real errors safely, log them with a reference.</p>
+</div></header>
+
+<section><div class="wrap">
+  <h2>At a glance: what the user sees</h2>
+  <div class="vs">
+    <div class="panel bad"><div class="label">&#10008; BROKEN</div>
+      <div class="screen"><div class="browser"><div class="addr">/order.asp?id=1</div><div class="view"><div class="errbox"><p class="t" style="font-size:1.3em;color:#b00020">500 - Internal server error.</p>
+<p>There is a problem with the resource you are looking for, and it cannot be displayed.</p></div></div></div>
+      <p class="caption">Illustration of the typical symptom (mock-up, not a screenshot of a real client system).</p></div>
+    </div>
+    <div class="panel good"><div class="label">&#10004; FIXED</div>
+      <div class="screen"><div class="browser"><div class="addr">/order.asp?id=1</div><div class="view"><p><strong>Sorry, something went wrong.</strong></p><p>We have logged the problem. Please quote reference <strong>20261112-101503-4821</strong>.</p>
+<hr><p style="font-family:Consolas,monospace;font-size:.82em">App_Data\asp-errors.log:<br>20261112-101503-4821 /order.asp?id=1 Loading order total 0x80040E37 Microsoft OLE DB Driver for SQL Server Invalid object name 'Orderz'.</p></div></div>
+      <p class="caption">Illustration of the result after the fix (mock-up).</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>At a glance: the code</h2>
+  <div class="vs">
+    <div class="panel bad"><div class="label">&#10008; BROKEN code</div><pre><code>On Error Resume Next      &#x27; hides EVERY error below
+
+Set conn = Server.CreateObject(&quot;ADODB.Connection&quot;)
+conn.Open CONN_STR
+Set rs = conn.Execute(&quot;SELECT Total FROM Orderz &quot; &amp; _
+                      &quot;WHERE OrderID = &quot; &amp; CLng(id))
+%&gt;
+&lt;p&gt;Order total: &lt;%= rs(&quot;Total&quot;) %&gt;&lt;/p&gt;  &lt;!-- blank --&gt;</code></pre><div class="note">The typo <code>Orderz</code> is swallowed. Nobody knows.</div></div>
+    <div class="panel good"><div class="label">&#10004; FIXED code</div><pre><code>On Error Resume Next                   &#x27; guard one step
+Set rs = conn.Execute(&quot;SELECT Total FROM Orderz &quot; &amp; _
+                      &quot;WHERE OrderID = &quot; &amp; CLng(id))
+If Err.Number &lt;&gt; 0 Then FailPage &quot;Loading order total&quot;
+On Error GoTo 0                        &#x27; back to normal
+
+&#x27; FailPage: copies Err details, writes a line to
+&#x27; /App_Data/asp-errors.log, sets status 500 and shows
+&#x27; &quot;Sorry, something went wrong. Reference 20261112-...&quot;</code></pre><div class="note">The exact cause is in the log; the visitor gets a reference number.</div></div>
+  </div>
+  <p class="files">Full runnable pages: <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/05-hidden-500-errors/broken.asp">broken.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/05-hidden-500-errors/fixed.asp">fixed.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/05-hidden-500-errors/README.md">README</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/assets/demo-db.sql">demo database script</a></p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>1. The symptom</h2>
+  <p>Visitors get <em>500 - Internal server error. There is a problem with the resource you are looking for, and it cannot be displayed.</em> Or worse: the page loads but a value is blank, an email is never sent, an order is half saved, and there is no error at all.</p>
+  <h2 style="margin-top:30px">2. Why it happens</h2>
+  <p>For security, IIS hides ASP error details from remote visitors, so the useful message (file, line, description) never reaches anyone. Many old pages also start with <code>On Error Resume Next</code>, which tells VBScript to skip every failing line silently for the rest of the page. Without logging, the cause is invisible.</p>
+  <h2 style="margin-top:30px">3. How to spot it</h2>
+  <ul><li><code>On Error Resume Next</code> near the top of a page or include, with no <code>If Err.Number &lt;&gt; 0</code> checks after risky lines.</li><li>IIS log (<code>%SystemDrive%\inetpub\logs\LogFiles</code>) shows status 500 with sub-status and, for ASP, the line number and error text in the query field.</li><li>Browsing the page <em>on the server itself</em> shows the detailed error that remote users never see.</li></ul>
+  <h2 style="margin-top:30px">4. The fix</h2>
+  <p>On a test server or for local requests, turn on detailed errors: in IIS Manager open ASP &gt; Debugging Properties &gt; <em>Send Errors To Browser</em> = True, and Error Pages &gt; Edit Feature Settings &gt; <em>Detailed errors for local requests</em>. In code, use <code>On Error Resume Next</code> only around a risky line, check <code>Err.Number</code> straight after, write the details to a log file outside the web folder, show the visitor a polite message with a reference number, and switch back with <code>On Error GoTo 0</code>.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>5. Checklist</h2>
+  <ul class="check"><li>No page-wide <code>On Error Resume Next</code>; error checks sit right after risky lines.</li><li>Errors are logged with time, URL, step, number, source and description.</li><li>Visitors see a friendly message with a reference, never stack details.</li><li>Detailed errors are on for local requests only (<code>appcmd set config -section:httpErrors -errorMode:DetailedLocalOnly</code>).</li><li>Log folder (e.g. App_Data) is not browsable and the app pool can write to it.</li></ul>
+  <div class="callout"><strong>Have this problem in a live application?</strong> I investigate the specific issue in your existing code and make the smallest practical change to fix it. <a href="mailto:devmishratanmaydev@gmail.com?subject=Classic%20ASP%20problem%3A%2005-hidden-500-errors">Send me the problem &rarr;</a></div>
+</div></section>
+
+<section><div class="wrap" style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap"><a href="../04-session-loss/">&larr; Previous: Users logged out and carts emptied at random (Session loss)</a><a href="../06-xss-output-encoding/">Next: Cross-site scripting (XSS) from unencoded output &rarr;</a></div></section>
+
+<footer><div class="wrap">
+  <strong>Legacy Web Rescue</strong> &middot; Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a> &middot; <a href="https://github.com/TanmayMishra22">GitHub</a><br>
+  Teaching example with made-up demo data. Not taken from any client system.
+</div></footer>
+</body>
+</html>
