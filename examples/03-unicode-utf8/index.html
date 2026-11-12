@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classic ASP fix 03: Garbled text: JosÃ©, â€™ and ???? instead of real characters | Legacy Web Rescue</title>
+<meta name="description" content="Accents, Hindi and curly quotes break on the way in or out. Fix: UTF-8 end to end, NVARCHAR and N&#x27;&#x27; strings.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap"><a href="../../">&larr; Back to Legacy Web Rescue (home)</a> &nbsp;|&nbsp; <a href="../">All 10 Classic ASP fixes</a></div></div>
+
+<header class="page"><div class="wrap">
+  <div class="eyebrow">Classic ASP fix 03 of 10 &middot; Broken vs fixed</div>
+  <h1>Garbled text: JosÃ©, â€™ and ???? instead of real characters</h1>
+  <p class="lead">Accents, Hindi and curly quotes break on the way in or out. Fix: UTF-8 end to end, NVARCHAR and N'' strings.</p>
+</div></header>
+
+<section><div class="wrap">
+  <h2>At a glance: what the user sees</h2>
+  <div class="vs">
+    <div class="panel bad"><div class="label">&#10008; BROKEN</div>
+      <div class="screen"><div class="browser"><div class="addr">/guestbook.asp</div><div class="view"><p><strong>Guestbook - Namaste / à¤¨à¤®à¤¸à¥à¤¤à¥‡</strong></p>
+<ul><li>JosÃ© MÃ¼ller</li><li>??????</li><li>Itâ€™s great</li></ul></div></div>
+      <p class="caption">Illustration of the typical symptom (mock-up, not a screenshot of a real client system).</p></div>
+    </div>
+    <div class="panel good"><div class="label">&#10004; FIXED</div>
+      <div class="screen"><div class="browser"><div class="addr">/guestbook.asp</div><div class="view"><p><strong>Guestbook - Namaste / नमस्ते</strong></p>
+<ul><li>José Müller</li><li>नमस्ते</li><li>It’s great</li></ul></div></div>
+      <p class="caption">Illustration of the result after the fix (mock-up).</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>At a glance: the code</h2>
+  <div class="vs">
+    <div class="panel bad"><div class="label">&#10008; BROKEN code</div><pre><code>&lt;%@ Language=&quot;VBScript&quot; %&gt;
+&lt;%
+&#x27; no CodePage, no Charset -&gt; server ANSI code page
+Const adVarChar = 129    &#x27; non-Unicode parameter
+
+nm = Request.Form(&quot;name&quot;)
+cmd.CommandText = &quot;INSERT INTO Guestbook (Name) VALUES (?)&quot;
+cmd.Parameters.Append cmd.CreateParameter( _
+    &quot;name&quot;, adVarChar, adParamInput, 200, nm)
+cmd.Execute
+%&gt;</code></pre><div class="note">Four layers disagree about the encoding.</div></div>
+    <div class="panel good"><div class="label">&#10004; FIXED code</div><pre><code>&lt;%@ Language=&quot;VBScript&quot; CodePage=&quot;65001&quot; %&gt;
+&lt;%
+Response.CodePage = 65001
+Response.Charset  = &quot;utf-8&quot;
+Const adVarWChar = 202   &#x27; Unicode parameter (NVARCHAR)
+
+nm = Trim(Request.Form(&quot;name&quot;) &amp; &quot;&quot;)
+cmd.CommandText = &quot;INSERT INTO Guestbook (Name) VALUES (?)&quot;
+cmd.Parameters.Append cmd.CreateParameter( _
+    &quot;name&quot;, adVarWChar, adParamInput, 200, nm)
+cmd.Execute
+%&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;   &lt;!-- and Name is NVARCHAR(200) --&gt;</code></pre><div class="note">File, ASP, browser and database all use UTF-8 / Unicode.</div></div>
+  </div>
+  <p class="files">Full runnable pages: <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/03-unicode-utf8/broken.asp">broken.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/03-unicode-utf8/fixed.asp">fixed.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/03-unicode-utf8/README.md">README</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/assets/demo-db.sql">demo database script</a></p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>1. The symptom</h2>
+  <p>Names show up as <em>JosÃ© MÃ¼ller</em>, apostrophes as <em>â€™</em>, or Hindi/Chinese text is saved as <em>??????</em>. Often it starts after copying the site to a new server or after someone edits a file in a different editor.</p>
+  <h2 style="margin-top:30px">2. Why it happens</h2>
+  <p>Text passes through four places, and each must agree on the encoding: the .asp file on disk, ASP's code page (how it reads form posts and writes output), the browser's charset, and the database column. Classic ASP defaults to the server's ANSI code page (for example 1252). If the file is UTF-8 but ASP thinks it is 1252, you get <em>Ã©</em>. If the column is VARCHAR or the parameter is <code>adVarChar</code>, characters outside the code page become <em>?</em> and are lost for good.</p>
+  <h2 style="margin-top:30px">3. How to spot it</h2>
+  <ul><li>Line 1 of the page has no <code>CodePage="65001"</code>, and there is no <code>Response.Charset = "utf-8"</code>.</li><li>Columns are <code>VARCHAR</code>/<code>TEXT</code> instead of <code>NVARCHAR</code>/<code>NVARCHAR(MAX)</code>.</li><li>SQL literals without the <code>N</code> prefix: <code>'नमस्ते'</code> instead of <code>N'नमस्ते'</code>.</li><li>Parameters created as <code>adVarChar</code> (129) instead of <code>adVarWChar</code> (202).</li><li>Include files saved in a different encoding from the page that includes them.</li></ul>
+  <h2 style="margin-top:30px">4. The fix</h2>
+  <p>Make every step UTF-8: save all .asp and .inc files as UTF-8, put <code>CodePage="65001"</code> on line 1, set <code>Response.CodePage = 65001</code> and <code>Response.Charset = "utf-8"</code>, add <code>&lt;meta charset="utf-8"&gt;</code>, store text in NVARCHAR columns and send it with <code>adVarWChar</code> parameters (or <code>N'...'</code> literals). Text already saved as <em>?</em> cannot be recovered; text saved as <em>Ã©</em> often can be converted back.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>5. Checklist</h2>
+  <ul class="check"><li>All .asp/.inc files saved as UTF-8 (same encoding everywhere).</li><li><code>&lt;%@ CodePage="65001" %&gt;</code> on line 1, plus <code>Response.Charset = "utf-8"</code>.</li><li><code>&lt;meta charset="utf-8"&gt;</code> in the HTML head.</li><li>Text columns are NVARCHAR; literals use <code>N'...'</code>; parameters use <code>adVarWChar</code>.</li><li>Tested with an accent (é), a curly quote (’) and a non-Latin script (नमस्ते).</li></ul>
+  <div class="callout"><strong>Have this problem in a live application?</strong> I investigate the specific issue in your existing code and make the smallest practical change to fix it. <a href="mailto:devmishratanmaydev@gmail.com?subject=Classic%20ASP%20problem%3A%2003-unicode-utf8">Send me the problem &rarr;</a></div>
+</div></section>
+
+<section><div class="wrap" style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap"><a href="../02-closed-recordset-leaks/">&larr; Previous: &quot;Operation is not allowed when the object is closed&quot; and connection leaks</a><a href="../04-session-loss/">Next: Users logged out and carts emptied at random (Session loss) &rarr;</a></div></section>
+
+<footer><div class="wrap">
+  <strong>Legacy Web Rescue</strong> &middot; Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a> &middot; <a href="https://github.com/TanmayMishra22">GitHub</a><br>
+  Teaching example with made-up demo data. Not taken from any client system.
+</div></footer>
+</body>
+</html>
