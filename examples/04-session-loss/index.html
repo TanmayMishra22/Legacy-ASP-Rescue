@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classic ASP fix 04: Users logged out and carts emptied at random (Session loss) | Legacy Web Rescue</title>
+<meta name="description" content="Session() data vanishes on app pool recycles, web gardens and load balancers. Fix: keep important state in the database.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap"><a href="../../">&larr; Back to Legacy Web Rescue (home)</a> &nbsp;|&nbsp; <a href="../">All 10 Classic ASP fixes</a></div></div>
+
+<header class="page"><div class="wrap">
+  <div class="eyebrow">Classic ASP fix 04 of 10 &middot; Broken vs fixed</div>
+  <h1>Users logged out and carts emptied at random (Session loss)</h1>
+  <p class="lead">Session() data vanishes on app pool recycles, web gardens and load balancers. Fix: keep important state in the database.</p>
+</div></header>
+
+<section><div class="wrap">
+  <h2>At a glance: what the user sees</h2>
+  <div class="vs">
+    <div class="panel bad"><div class="label">&#10008; BROKEN</div>
+      <div class="screen"><div class="browser"><div class="addr">/cart.asp   (after adding 3 items, then an app pool recycle)</div><div class="view"><p><strong>Your cart</strong></p><p style="color:#b00020"><strong>Your cart is empty.</strong></p></div></div>
+      <p class="caption">Illustration of the typical symptom (mock-up, not a screenshot of a real client system).</p></div>
+    </div>
+    <div class="panel good"><div class="label">&#10004; FIXED</div>
+      <div class="screen"><div class="browser"><div class="addr">/cart.asp   (after adding 3 items, then an app pool recycle)</div><div class="view"><p><strong>Your cart</strong></p><ul><li>Product 101 &times; 1</li><li>Product 202 &times; 1</li><li>Product 303 &times; 1</li></ul></div></div>
+      <p class="caption">Illustration of the result after the fix (mock-up).</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>At a glance: the code</h2>
+  <div class="vs">
+    <div class="panel bad"><div class="label">&#10008; BROKEN code</div><pre><code>pid = Request.QueryString(&quot;add&quot;)
+If Len(pid) &gt; 0 And IsNumeric(pid) Then
+    &#x27; Lives only in this worker process&#x27;s memory
+    Session(&quot;Cart&quot;) = Session(&quot;Cart&quot;) &amp; CLng(pid) &amp; &quot;,&quot;
+End If
+
+cart = Session(&quot;Cart&quot;) &amp; &quot;&quot;
+If Len(cart) = 0 Then
+    Response.Write &quot;Your cart is empty.&quot;
+End If</code></pre><div class="note">Recycle, idle timeout or a second process = empty cart.</div></div>
+    <div class="panel good"><div class="label">&#10004; FIXED code</div><pre><code>token = Request.Cookies(&quot;CartToken&quot;)
+If Not IsValidToken(token) Then           &#x27; GUID regex check
+    token = NewToken(conn)                &#x27; SELECT NEWID()
+    Response.Cookies(&quot;CartToken&quot;) = token
+    Response.Cookies(&quot;CartToken&quot;).Expires = DateAdd(&quot;d&quot;, 30, Now())
+End If
+
+Set cmd = MakeCmd(conn, _
+  &quot;UPDATE CartItems SET Qty = Qty + 1 &quot; &amp; _
+  &quot;WHERE CartToken = ? AND ProductID = ?; &quot; &amp; _
+  &quot;IF @@ROWCOUNT = 0 INSERT INTO CartItems &quot; &amp; _
+  &quot;(CartToken, ProductID, Qty) VALUES (?, ?, 1);&quot;)
+&#x27; ...append the 4 parameters, then cmd.Execute</code></pre><div class="note">The cart is in SQL Server and survives restarts and extra servers.</div></div>
+  </div>
+  <p class="files">Full runnable pages: <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/04-session-loss/broken.asp">broken.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/04-session-loss/fixed.asp">fixed.asp</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/04-session-loss/README.md">README</a> &middot; <a href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/blob/main/examples/assets/demo-db.sql">demo database script</a></p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>1. The symptom</h2>
+  <p>Users are suddenly logged out, a shopping cart or multi-step form empties itself, or it happens only on the live server and never on the developer's PC. Complaints often cluster around a certain time of day or after quiet periods.</p>
+  <h2 style="margin-top:30px">2. Why it happens</h2>
+  <p>Classic ASP keeps <code>Session()</code> values in the memory of one IIS worker process. That memory is thrown away when the app pool recycles (by default every 1,740 minutes, on config changes, or on memory limits), when it shuts down after being idle (default 20 minutes), and it is not shared between processes in a web garden or between servers behind a load balancer. A change of host name (www vs no-www) also gives the visitor a new session cookie.</p>
+  <h2 style="margin-top:30px">3. How to spot it</h2>
+  <ul><li>Important data (login, cart, wizard steps) stored only in <code>Session("...")</code>.</li><li>App pool <em>Maximum Worker Processes</em> greater than 1 (web garden), or more than one server without sticky sessions.</li><li>Event Viewer (System log, source WAS) shows recycles at the time users complain.</li><li><code>Session.Timeout</code>, the ASP session timeout and the app pool idle timeout do not match.</li></ul>
+  <h2 style="margin-top:30px">4. The fix</h2>
+  <p>Keep only small, rebuildable things in Session. Store anything users would be upset to lose in SQL Server, keyed by a random token kept in a cookie (here created with SQL Server's <code>NEWID()</code>). Validate the token's format before using it, and always pass it as a parameter. As short-term relief, align the timeouts, turn off the web garden and schedule recycles for quiet hours.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>5. Checklist</h2>
+  <ul class="check"><li>Carts, logins and form progress are stored in the database, not only in Session.</li><li>The cookie holds a random token only, never user IDs or prices.</li><li>Token format is validated (regex) and used only in parameterised queries.</li><li>App pool idle timeout, recycling schedule and web garden settings are reviewed.</li><li>Old cart rows are cleaned up by a scheduled SQL job.</li></ul>
+  <div class="callout"><strong>Have this problem in a live application?</strong> I investigate the specific issue in your existing code and make the smallest practical change to fix it. <a href="mailto:devmishratanmaydev@gmail.com?subject=Classic%20ASP%20problem%3A%2004-session-loss">Send me the problem &rarr;</a></div>
+</div></section>
+
+<section><div class="wrap" style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap"><a href="../03-unicode-utf8/">&larr; Previous: Garbled text: JosÃ©, â€™ and ???? instead of real characters</a><a href="../05-hidden-500-errors/">Next: &quot;500 - Internal server error&quot; that hides the real problem &rarr;</a></div></section>
+
+<footer><div class="wrap">
+  <strong>Legacy Web Rescue</strong> &middot; Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a> &middot; <a href="https://github.com/TanmayMishra22">GitHub</a><br>
+  Teaching example with made-up demo data. Not taken from any client system.
+</div></footer>
+</body>
+</html>
