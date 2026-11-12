@@ -1,17 +1,105 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Classic ASP fixes: broken vs fixed | Legacy Web Rescue</title>
 <meta name="description" content="Ten common Classic ASP problems, each explained in plain language with broken and fixed code side by side.">
-<link rel="stylesheet" href="assets/style.css"></head>
+<meta name="theme-color" content="#0b1730">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
 <body>
-<div class="topbar"><div class="wrap"><a href="../">&larr; Back to Legacy Web Rescue (home)</a></div></div>
-<header class="page"><div class="wrap">
-<div class="eyebrow">Legacy Web Rescue &middot; Tanmay Mishra</div>
-<h1>Classic ASP fixes: broken vs fixed</h1>
-<p class="lead">Ten problems that keep turning up in old Classic ASP / IIS / SQL Server applications. Each page explains the symptom in plain language and shows the broken and fixed code side by side, with runnable <code>broken.asp</code> and <code>fixed.asp</code> files.</p>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="nav" aria-label="Main"><div class="wrap">
+  <a class="brand" href="../"><span class="logo" aria-hidden="true">LR</span>Legacy Web Rescue</a>
+  <ul>
+    <li><a href="../#fixes">Classic ASP fixes</a></li>
+    <li><a href="../#how">How it works</a></li>
+    <li><a href="../#about">About</a></li>
+    <li><a class="btn-nav" href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Send a problem</a></li>
+  </ul>
+</div></nav>
+
+<header class="hero small"><div class="wrap">
+  <p class="crumbs"><a href="../">Home</a> &rsaquo; Classic ASP fixes</p>
+  <h1>Classic ASP fixes: broken vs fixed</h1>
+  <p class="lead">Ten problems that keep turning up in old Classic ASP / IIS / SQL Server applications. Each page explains the symptom in plain language and shows the broken and fixed code side by side, with runnable <code>broken.asp</code> and <code>fixed.asp</code> files.</p>
 </div></header>
-<section><div class="wrap"><div class="grid"><a class="card" href="01-sql-injection/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">01. SQL injection in string-built queries</h3><p>Visitor text glued into SQL lets anyone read or wipe your data. Fix: ADODB.Command parameters.</p></a><a class="card" href="02-closed-recordset-leaks/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">02. "Operation is not allowed when the object is closed" and connection leaks</h3><p>Recordsets used after their connection is closed, and connections never released. Fix: GetRows, then close everything.</p></a><a class="card" href="03-unicode-utf8/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">03. Garbled text: JosÃ©, â€™ and ???? instead of real characters</h3><p>Accents, Hindi and curly quotes break on the way in or out. Fix: UTF-8 end to end, NVARCHAR and N'' strings.</p></a><a class="card" href="04-session-loss/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">04. Users logged out and carts emptied at random (Session loss)</h3><p>Session() data vanishes on app pool recycles, web gardens and load balancers. Fix: keep important state in the database.</p></a><a class="card" href="05-hidden-500-errors/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">05. "500 - Internal server error" that hides the real problem</h3><p>Generic 500 pages and On Error Resume Next hide what actually failed. Fix: see real errors safely, log them with a reference.</p></a><a class="card" href="06-xss-output-encoding/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">06. Cross-site scripting (XSS) from unencoded output</h3><p>Visitor text written straight into HTML can run scripts in other users' browsers. Fix: encode every output with Server.HTMLEncode.</p></a><a class="card" href="07-n-plus-1-slow-pages/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">07. Slow pages from N+1 queries and row-by-row loops</h3><p>One query per row turns a report into thousands of round trips. Fix: one JOIN/GROUP BY query plus GetRows.</p></a><a class="card" href="08-rest-api-tls12/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">08. Calling modern REST/JSON APIs: TLS 1.2 errors and fragile parsing</h3><p>Payment, SMS or shipping API calls fail with secure-channel errors or break on small changes. Fix: ServerXMLHTTP 6.0, TLS 1.2, timeouts, status checks.</p></a><a class="card" href="09-dates-locale/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">09. Date bugs: 03/04 read as 4 March, and "out-of-range" datetime errors</h3><p>Dates change meaning with server locale and break SQL. Fix: yyyy-mm-dd input, DateSerial parsing, typed date parameters.</p></a><a class="card" href="10-file-upload/"><div><span class="pill bad">BROKEN</span><span class="pill good">FIXED</span></div><h3 style="margin-top:10px">10. File uploads that fail, corrupt files or open a security hole</h3><p>ASP 0104 / ASP 0206 errors, broken files and unsafe saving. Fix: correct limits, one BinaryRead, safe names and folders.</p></a>
-<a class="card" href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/tree/main/examples/classic-asp-api-diagnostics"><h3>Bonus: Classic ASP API diagnostics</h3><p>A Classic ASP page that calls an HTTP API, captures status and body, and prints a diagnosis (on GitHub).</p></a>
-</div></div></section>
-<footer><div class="wrap"><strong>Legacy Web Rescue</strong> &middot; Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a><br>Teaching examples with made-up demo data. Not taken from any client system.</div></footer>
-</body></html>
+<main id="main"><section><div class="wrap"><div class="grid">
+<a class="card" href="01-sql-injection/">
+  <div class="card-top"><span class="num" aria-hidden="true">01</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>SQL injection in string-built queries</h3>
+  <p>Visitor text glued into SQL lets anyone read or wipe your data. Fix: ADODB.Command parameters.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="02-closed-recordset-leaks/">
+  <div class="card-top"><span class="num" aria-hidden="true">02</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>"Operation is not allowed when the object is closed" and connection leaks</h3>
+  <p>Recordsets used after their connection is closed, and connections never released. Fix: GetRows, then close everything.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="03-unicode-utf8/">
+  <div class="card-top"><span class="num" aria-hidden="true">03</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>Garbled text: JosÃ©, â€™ and ???? instead of real characters</h3>
+  <p>Accents, Hindi and curly quotes break on the way in or out. Fix: UTF-8 end to end, NVARCHAR and N'' strings.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="04-session-loss/">
+  <div class="card-top"><span class="num" aria-hidden="true">04</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>Users logged out and carts emptied at random (Session loss)</h3>
+  <p>Session() data vanishes on app pool recycles, web gardens and load balancers. Fix: keep important state in the database.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="05-hidden-500-errors/">
+  <div class="card-top"><span class="num" aria-hidden="true">05</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>"500 - Internal server error" that hides the real problem</h3>
+  <p>Generic 500 pages and On Error Resume Next hide what actually failed. Fix: see real errors safely, log them with a reference.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="06-xss-output-encoding/">
+  <div class="card-top"><span class="num" aria-hidden="true">06</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>Cross-site scripting (XSS) from unencoded output</h3>
+  <p>Visitor text written straight into HTML can run scripts in other users' browsers. Fix: encode every output with Server.HTMLEncode.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="07-n-plus-1-slow-pages/">
+  <div class="card-top"><span class="num" aria-hidden="true">07</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>Slow pages from N+1 queries and row-by-row loops</h3>
+  <p>One query per row turns a report into thousands of round trips. Fix: one JOIN/GROUP BY query plus GetRows.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="08-rest-api-tls12/">
+  <div class="card-top"><span class="num" aria-hidden="true">08</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>Calling modern REST/JSON APIs: TLS 1.2 errors and fragile parsing</h3>
+  <p>Payment, SMS or shipping API calls fail with secure-channel errors or break on small changes. Fix: ServerXMLHTTP 6.0, TLS 1.2, timeouts, status checks.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="09-dates-locale/">
+  <div class="card-top"><span class="num" aria-hidden="true">09</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>Date bugs: 03/04 read as 4 March, and "out-of-range" datetime errors</h3>
+  <p>Dates change meaning with server locale and break SQL. Fix: yyyy-mm-dd input, DateSerial parsing, typed date parameters.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="10-file-upload/">
+  <div class="card-top"><span class="num" aria-hidden="true">10</span><span class="pills"><span class="pill bad">&#10008; BROKEN</span><span class="pill good">&#10004; FIXED</span></span></div>
+  <h3>File uploads that fail, corrupt files or open a security hole</h3>
+  <p>ASP 0104 / ASP 0206 errors, broken files and unsafe saving. Fix: correct limits, one BinaryRead, safe names and folders.</p>
+  <span class="go">Read the fix &rarr;</span>
+</a>
+<a class="card" href="https://github.com/TanmayMishra22/Legacy-ASP-Rescue/tree/main/examples/classic-asp-api-diagnostics" target="_blank" rel="noopener">
+  <div class="card-top"><span class="num bonus" aria-hidden="true">+</span></div>
+  <h3>Bonus: Classic ASP API diagnostics</h3>
+  <p>A Classic ASP page that calls an HTTP API, captures the status and body, and prints a diagnosis (opens on GitHub).</p>
+  <span class="go">View on GitHub &rarr;</span>
+</a>
+</div></div></section></main>
+<footer><div class="wrap">
+  <div><strong>Legacy Web Rescue</strong><br>Tanmay Mishra &middot; <a href="mailto:devmishratanmaydev@gmail.com">devmishratanmaydev@gmail.com</a>
+  <p class="small">Teaching examples with made-up demo data. Not taken from any client system.</p></div>
+  <div class="links"><a href="https://github.com/TanmayMishra22" target="_blank" rel="noopener">GitHub &rarr;</a><a href="mailto:devmishratanmaydev@gmail.com?subject=Legacy%20Web%20Problem">Email &rarr;</a></div>
+</div></footer>
+</body>
+</html>
